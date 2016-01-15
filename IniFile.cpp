@@ -1,12 +1,10 @@
 #include "IniFile.h"
 
 
-CIniFile::CIniFile(char *szFileName, int iReadWrite, int &iErrorCode)
-{
+CIniFile::CIniFile(char *szFileName, int iReadWrite, int &iErrorCode) {
 	iniFile.clear();
 
-	if (iReadWrite == PINI_READ)
-	{
+	if (iReadWrite == PINI_READ) {
 
 		fileHandle.open(szFileName, ios_base::in);
 
@@ -17,12 +15,10 @@ CIniFile::CIniFile(char *szFileName, int iReadWrite, int &iErrorCode)
 			return;
 		}
 	}
-	else
-	{
+	else {
 		fileHandle.open(szFileName, std::fstream::in | std::fstream::out | std::fstream::app);
 
-		if (!fileHandle)
-		{
+		if (!fileHandle) {
 			iErrorCode = PINI_OPEN_ERROR;
 			iIsError = PINI_OPEN_ERROR;
 			return;
@@ -31,8 +27,7 @@ CIniFile::CIniFile(char *szFileName, int iReadWrite, int &iErrorCode)
 
 	for (string line; getline(fileHandle, line);) {
 		size_t found = line.find('=');
-		if (found != std::string::npos)
-		{
+		if (found != std::string::npos) {
 			string key;
 			string value;
 			size_t keyend = found;
@@ -46,22 +41,19 @@ CIniFile::CIniFile(char *szFileName, int iReadWrite, int &iErrorCode)
 
 			iniFile.insert(std::pair<string, string>(key, value));
 		}
-		else
-		{
+		else {
 			iErrorCode = PINI_PARSE_ERROR;
 			iIsError = PINI_PARSE_ERROR;
 			return;
 		}
 	}
 
-	if (iReadWrite == PINI_READWRITE)
-	{
+	if (iReadWrite == PINI_READWRITE) {
 		fileHandle.close();
 		fileHandle.open(szFileName, std::fstream::out);
 	}
 
-	if (iniFile.size() <= 0 && iReadWrite != PINI_READWRITE)
-	{
+	if (iniFile.size() <= 0 && iReadWrite != PINI_READWRITE) {
 		iErrorCode = PINI_EMPTY_FILE;
 		iIsError = PINI_EMPTY_FILE;
 		return;
@@ -74,12 +66,9 @@ CIniFile::CIniFile(char *szFileName, int iReadWrite, int &iErrorCode)
 }
 
 
-CIniFile::~CIniFile()
-{
-	if (iIsError == PINI_NO_ERROR)
-	{
-		if (giReadWrite == PINI_READWRITE)
-		{
+CIniFile::~CIniFile() {
+	if (iIsError == PINI_NO_ERROR) {
+		if (giReadWrite == PINI_READWRITE) {
 			//fileHandle.flush();
 			unordered_map <string, string>::iterator cur;
 			for (cur = iniFile.begin(); cur != iniFile.end(); cur++)
@@ -94,13 +83,21 @@ CIniFile::~CIniFile()
 	}
 }
 
-int CIniFile::GetIniKeysCount()
-{
+int CIniFile::GetIniKeysCount() {
 	return iniFile.size();
 }
 
-int CIniFile::GetIniInt(char * szKey, int & iValue)
-{
+int CIniFile::GetIniKeyExists(char * szKey) {
+	std::unordered_map<string, string>::iterator it;
+
+	it = iniFile.find(szKey);
+
+	if (it == iniFile.end()) return 0;
+
+	return 1;
+}
+
+int CIniFile::GetIniInt(char * szKey, int & iValue) {
 	if (iIsError != PINI_NO_ERROR) return iIsError;
 		
 	std::unordered_map<string, string>::iterator it;
@@ -114,8 +111,7 @@ int CIniFile::GetIniInt(char * szKey, int & iValue)
 	return PINI_NO_ERROR;
 }
 
-int CIniFile::GetIniFloat(char * szKey, float & fValue)
-{
+int CIniFile::GetIniFloat(char * szKey, float & fValue) {
 	if (iIsError != PINI_NO_ERROR) return iIsError;
 
 	std::unordered_map<string, string>::iterator it;
@@ -129,8 +125,7 @@ int CIniFile::GetIniFloat(char * szKey, float & fValue)
 	return PINI_NO_ERROR;
 }
 
-int CIniFile::GetIniString(char * szKey, const char *& szValue)
-{
+int CIniFile::GetIniString(char * szKey, const char *& szValue) {
 	if (iIsError != PINI_NO_ERROR) return iIsError;
 
 	std::unordered_map<string, string>::iterator it;
@@ -144,8 +139,7 @@ int CIniFile::GetIniString(char * szKey, const char *& szValue)
 	return PINI_NO_ERROR;
 }
 
-int CIniFile::SetIniInt(char * szKey, int iValue)
-{
+int CIniFile::SetIniInt(char * szKey, int iValue) {
 	if (iIsError != PINI_NO_ERROR) return iIsError;
 
 	if (giReadWrite == PINI_READ) return PINI_READONLY;
@@ -153,20 +147,17 @@ int CIniFile::SetIniInt(char * szKey, int iValue)
 	std::unordered_map<string, string>::iterator it;
 	it = iniFile.find(szKey);
 
-	if (it == iniFile.end())
-	{
+	if (it == iniFile.end()) {
 		iniFile.insert(std::pair<string, string>(szKey, to_string(iValue)));
 	}
-	else
-	{
+	else {
 		iniFile.at(szKey) = to_string(iValue);
 	}
 
 	return PINI_NO_ERROR;
 }
 
-int CIniFile::SetIniFloat(char * szKey, float fValue)
-{
+int CIniFile::SetIniFloat(char * szKey, float fValue) {
 	if (iIsError != PINI_NO_ERROR) return iIsError;
 
 	if (giReadWrite == PINI_READ) return PINI_READONLY;
@@ -174,12 +165,10 @@ int CIniFile::SetIniFloat(char * szKey, float fValue)
 	std::unordered_map<string, string>::iterator it;
 	it = iniFile.find(szKey);
 
-	if (it == iniFile.end())
-	{
+	if (it == iniFile.end()) {
 		iniFile.insert(std::pair<string, string>(szKey, to_string(fValue)));
 	}
-	else
-	{
+	else {
 		iniFile.at(szKey) = to_string(fValue);
 	}
 
@@ -195,14 +184,22 @@ int CIniFile::SetIniString(char * szKey, char * szValue)
 	std::unordered_map<string, string>::iterator it;
 	it = iniFile.find(szKey);
 
-	if (it == iniFile.end())
-	{
+	if (it == iniFile.end()) {
 		iniFile.insert(std::pair<string, string>(szKey, szValue));
 	}
-	else
-	{
+	else {
 		iniFile.at(szKey) = szValue;
 	}
+
+	return PINI_NO_ERROR;
+}
+
+int CIniFile::RemoveIniKey(char * szKey) {
+	if (iIsError != PINI_NO_ERROR) return iIsError;
+
+	if (giReadWrite == PINI_READ) return PINI_READONLY;
+
+	iniFile.erase(szKey);
 
 	return PINI_NO_ERROR;
 }

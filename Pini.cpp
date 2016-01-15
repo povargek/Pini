@@ -13,13 +13,11 @@ extern void *pAMXFunctions;
 CIniFile *pIniFiles[PINI_MAX_OPENED_FILES];
 int iIniSlots[PINI_MAX_OPENED_FILES];
 
-PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports() 
-{
+PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()  {
 	return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES;
 }
 
-int set_amxstring(AMX *amx, cell amx_addr, const char *source, int max)
-{
+int set_amxstring(AMX *amx, cell amx_addr, const char *source, int max) {
 	cell* dest = (cell *)(amx->base + (int)(((AMX_HEADER *)amx->base)->dat + amx_addr));
 	cell* start = dest;
 	while (max--&&*source)
@@ -31,21 +29,17 @@ int set_amxstring(AMX *amx, cell amx_addr, const char *source, int max)
 
 
 // native OpenIniFile(&PINI:Handle, filename[], readwrite = PINI_READWRITE);
-static cell AMX_NATIVE_CALL n_OpenIniFile(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_OpenIniFile(AMX* amx, cell* params) {
 	char *szFileName;
 	amx_StrParam(amx, params[2], szFileName);
 	int rw = params[3];
 
-	for (int i = 0; i < PINI_MAX_OPENED_FILES; i++)
-	{
-		if (iIniSlots[i] == 0)
-		{
+	for (int i = 0; i < PINI_MAX_OPENED_FILES; i++) {
+		if (iIniSlots[i] == 0) {
 			int err = PINI_NO_ERROR;
 			pIniFiles[i] = new CIniFile(szFileName, rw, err);
 
-			if (err != PINI_NO_ERROR)
-			{
+			if (err != PINI_NO_ERROR) {
 				cell* cptr;
 				amx_GetAddr(amx, params[1], &cptr);
 				*cptr = (cell)(0xFF);
@@ -53,8 +47,7 @@ static cell AMX_NATIVE_CALL n_OpenIniFile(AMX* amx, cell* params)
 				iIniSlots[i] = 0;
 				delete pIniFiles[i];
 			}
-			else
-			{
+			else {
 				cell* cptr;
 				amx_GetAddr(amx, params[1], &cptr);
 				*cptr = (cell)(i);
@@ -71,8 +64,7 @@ static cell AMX_NATIVE_CALL n_OpenIniFile(AMX* amx, cell* params)
 
 // native GetIniKeysCount(PINI:Handle);
 
-static cell AMX_NATIVE_CALL n_GetIniKeysCount(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_GetIniKeysCount(AMX* amx, cell* params) {
 	int handle = params[1];
 
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return -1;
@@ -84,10 +76,26 @@ static cell AMX_NATIVE_CALL n_GetIniKeysCount(AMX* amx, cell* params)
 	return pIniFiles[handle]->GetIniKeysCount();
 }
 
-// native GetIniInt(PINI:Handle, key[], &value);
+// native GetIniKeyExists(PINI:Handle, const key[]);
 
-static cell AMX_NATIVE_CALL n_GetIniInt(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_GetIniKeyExists(AMX* amx, cell* params) {
+	int handle = params[1];
+
+	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return -1;
+
+	if (pIniFiles[handle] == nullptr) return -1;
+
+	if (iIniSlots[handle] == 0) return -1;
+
+	char *szKey;
+	amx_StrParam(amx, params[2], szKey);
+
+	return pIniFiles[handle]->GetIniKeyExists(szKey);
+}
+
+// native GetIniInt(PINI:Handle, const key[], &value);
+
+static cell AMX_NATIVE_CALL n_GetIniInt(AMX* amx, cell* params) {
 	int handle = params[1];
 
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
@@ -112,10 +120,9 @@ static cell AMX_NATIVE_CALL n_GetIniInt(AMX* amx, cell* params)
 	return ret;
 }
 
-// native GetIniFloat(PINI:Handle, key[], &Float:value);
+// native GetIniFloat(PINI:Handle, const key[], &Float:value);
 
-static cell AMX_NATIVE_CALL n_GetIniFloat(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_GetIniFloat(AMX* amx, cell* params) {
 	int handle = params[1];
 
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
@@ -141,10 +148,9 @@ static cell AMX_NATIVE_CALL n_GetIniFloat(AMX* amx, cell* params)
 	return ret;
 }
 
-// native GetIniString(PINI:Handle, key[], const value[], destsize);
+// native GetIniString(PINI:Handle, const key[], value[], destsize = sizeof(value));
 
-static cell AMX_NATIVE_CALL n_GetIniString(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_GetIniString(AMX* amx, cell* params) {
 	int handle = params[1];
 
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
@@ -167,10 +173,9 @@ static cell AMX_NATIVE_CALL n_GetIniString(AMX* amx, cell* params)
 	return PINI_NO_ERROR;
 }
 
-// native SetIniInt(PINI:Handle, key[], value);
+// native SetIniInt(PINI:Handle, const key[], value);
 
-static cell AMX_NATIVE_CALL n_SetIniInt(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_SetIniInt(AMX* amx, cell* params) {
 	int handle = params[1];
 
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
@@ -187,10 +192,9 @@ static cell AMX_NATIVE_CALL n_SetIniInt(AMX* amx, cell* params)
 	return ret;
 }
 
-// native SetIniFloat(PINI:Handle, key[], Float:value);
+// native SetIniFloat(PINI:Handle, const key[], Float:value);
 
-static cell AMX_NATIVE_CALL n_SetIniFloat(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_SetIniFloat(AMX* amx, cell* params) {
 	int handle = params[1];
 
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
@@ -207,10 +211,9 @@ static cell AMX_NATIVE_CALL n_SetIniFloat(AMX* amx, cell* params)
 	return ret;
 }
 
-// native SetIniString(PINI:Handle, key[], value[]);
+// native SetIniString(PINI:Handle, const key[], value[]);
 
-static cell AMX_NATIVE_CALL n_SetIniString(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_SetIniString(AMX* amx, cell* params) {
 	int handle = params[1];
 
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
@@ -231,8 +234,7 @@ static cell AMX_NATIVE_CALL n_SetIniString(AMX* amx, cell* params)
 
 // native CloseIniFile(PINI:Handle);
 
-static cell AMX_NATIVE_CALL n_CloseIniFile(AMX* amx, cell* params)
-{
+static cell AMX_NATIVE_CALL n_CloseIniFile(AMX* amx, cell* params) {
 	int handle = params[1];
 	
 	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
@@ -246,23 +248,38 @@ static cell AMX_NATIVE_CALL n_CloseIniFile(AMX* amx, cell* params)
 	return PINI_NO_ERROR;
 }
 
-PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData ) 
-{
+// native RemoveIniKey(PINI:Handle, const key[]);
+
+static cell AMX_NATIVE_CALL n_RemoveIniKey(AMX* amx, cell* params) {
+	int handle = params[1];
+
+	if (handle < 0 || handle >= PINI_MAX_OPENED_FILES) return PINI_INVALID_HANDLE;
+
+	if (pIniFiles[handle] == nullptr) return PINI_INVALID_HANDLE;
+
+	if (iIniSlots[handle] == 0) return PINI_INVALID_HANDLE;
+
+	char *szKey;
+	amx_StrParam(amx, params[2], szKey);
+
+	return pIniFiles[handle]->RemoveIniKey(szKey);
+}
+
+PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData ) {
 	memset(iIniSlots, 0, sizeof(iIniSlots));
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
 	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
 	logprintf(" Pini plugin by povargek loaded! (http://vk.com/povargek)\n");
 	return true;
 }
-PLUGIN_EXPORT void PLUGIN_CALL Unload()
-{
+PLUGIN_EXPORT void PLUGIN_CALL Unload() {
 	logprintf(" Pini plugin by povargek unloaded! (http://vk.com/povargek)\n");
 }
 
-AMX_NATIVE_INFO pluginNatives[] =
-{
+AMX_NATIVE_INFO pluginNatives[] = {
 	{ "OpenIniFile", n_OpenIniFile },
 	{ "GetIniKeysCount", n_GetIniKeysCount },
+	{ "GetIniKeyExists", n_GetIniKeyExists },
 	{ "GetIniInt", n_GetIniInt },
 	{ "GetIniFloat", n_GetIniFloat },
 	{ "GetIniString", n_GetIniString },
@@ -270,30 +287,18 @@ AMX_NATIVE_INFO pluginNatives[] =
 	{ "SetIniFloat", n_SetIniFloat },
 	{ "SetIniString", n_SetIniString },
 	{ "CloseIniFile", n_CloseIniFile },
+	{ "RemoveIniKey", n_RemoveIniKey },
 	{ 0,		0 }
 };
 
-#define USENAMETABLE(hdr) \
-                        ((hdr)->defsize==sizeof(AMX_FUNCSTUBNT))
-#define NUMENTRIES(hdr,field,nextfield) \
-                        (unsigned)(((hdr)->nextfield - (hdr)->field) / (hdr)->defsize)
-#define GETENTRY(hdr,table,index) \
-                        (AMX_FUNCSTUB *)((unsigned char*)(hdr) + (unsigned)(hdr)->table + (unsigned)index*(hdr)->defsize)
-#define GETENTRYNAME(hdr,entry) \
-                        ( USENAMETABLE(hdr) \
-                           ? (char *)((unsigned char*)(hdr) + (unsigned)((AMX_FUNCSTUBNT*)(entry))->nameofs) \
-                           : ((AMX_FUNCSTUB*)(entry))->name )
 
-PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx) 
-{	
+PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx) {	
 	return amx_Register( amx, pluginNatives, -1 );
 }
 
-PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx) 
-{
+PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx) {
 	return AMX_ERR_NONE;
 }
 
-PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
-{
+PLUGIN_EXPORT void PLUGIN_CALL ProcessTick() {
 }

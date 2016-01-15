@@ -35,13 +35,13 @@ using namespace std;
 #define PINI_READONLY 22
 #define PINI_OPEN_LIMIT 23
 
-class CIniFile
-{
+class CIniFile {
 public:
 	CIniFile(char *szFileName, int iReadWrite, int &iErrorCode);
 	~CIniFile();
 
 	int GetIniKeysCount();
+	int GetIniKeyExists(char *szKey);
 
 	int GetIniInt(char *szKey, int &iValue);
 	int GetIniFloat(char *szKey, float &fValue);
@@ -50,6 +50,8 @@ public:
 	int SetIniInt(char *szKey, int iValue);
 	int SetIniFloat(char *szKey, float fValue);
 	int SetIniString(char *szKey, char* szValue);
+
+	int RemoveIniKey(char *szKey);
 
 private:
 	fstream fileHandle;
