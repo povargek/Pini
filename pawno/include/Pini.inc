@@ -24,10 +24,12 @@
 
 native OpenIniFile(&PINI:Handle, filename[], readwrite = PINI_READWRITE);
 native GetIniKeysCount(PINI:Handle);
+native GetIniKeyExists(PINI:Handle, const key[]);
 native GetIniInt(PINI:Handle, const key[], &value);
 native GetIniFloat(PINI:Handle, const key[], &Float:value);
 native GetIniString(PINI:Handle, const key[], value[], destsize = sizeof(value));
 native SetIniInt(PINI:Handle, const key[], value);
 native SetIniFloat(PINI:Handle, const key[], Float:value);
 native SetIniString(PINI:Handle, const key[], value[]);
+native RemoveIniKey(PINI:Handle, const key[]);
 native CloseIniFile(PINI:Handle);

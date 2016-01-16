@@ -69,7 +69,7 @@ CIniFile::CIniFile(char *szFileName, int iReadWrite, int &iErrorCode) {
 CIniFile::~CIniFile() {
 	if (iIsError == PINI_NO_ERROR) {
 		if (giReadWrite == PINI_READWRITE) {
-			//fileHandle.flush();
+
 			unordered_map <string, string>::iterator cur;
 			for (cur = iniFile.begin(); cur != iniFile.end(); cur++)
 			{
@@ -79,6 +79,7 @@ CIniFile::~CIniFile() {
 				fileHandle << key << " = " << value << endl;
 			}
 		}
+		
 		fileHandle.close();
 	}
 }
