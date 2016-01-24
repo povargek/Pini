@@ -245,6 +245,8 @@ static cell AMX_NATIVE_CALL n_CloseIniFile(AMX* amx, cell* params) {
 
 	delete pIniFiles[handle];
 
+	iIniSlots[handle] = 0;
+
 	return PINI_NO_ERROR;
 }
 
